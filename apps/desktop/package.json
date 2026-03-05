@@ -1,0 +1,10 @@
+{
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"start": "electron ."		
+	},
+	"dependencies": {
+		"electron": "^40.7.0"
+	}
+}
