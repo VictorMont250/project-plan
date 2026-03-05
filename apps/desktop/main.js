@@ -1,0 +1,26 @@
+import { app, BrowserWindow } from 'electron/main'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const createWindow = () => {
+    const window = new BrowserWindow({
+        width: 800,
+        height: 600
+    })
+    window.loadFile(path.join(__dirname, '..', 'web', 'index.html'))
+}
+
+app.whenReady().then(() => {
+    createWindow()
+
+    app.on('active', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
+})
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') 
+        app.quit()
+})
