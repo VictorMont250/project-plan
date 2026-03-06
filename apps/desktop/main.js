@@ -6,8 +6,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const createWindow = () => {
     const window = new BrowserWindow({
-        width: 800,
-        height: 600
+        width: 1200,
+        height: 650
     })
     window.loadFile(path.join(__dirname, '..', 'web', 'index.html'))
 }
