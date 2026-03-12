@@ -1,3 +1,5 @@
+import * as Phaser from "../../node_modules/phaser/dist/phaser.esm.js";
+
 const config = {
     type: Phaser.AUTO,
     width: 1200,
@@ -20,15 +22,20 @@ let player;
 let cursors;
 let ground;
 
+//shooting vars
+let spaceKey;
+let bullets;
+
 const game = new Phaser.Game(config);
 
 
 function preload() {
     
     this.load.image("ground", "../../packages/assets/grass.png");
+    this.load.image("shoot", "../../packages/assets/shoot.png");
     this.load.spritesheet("ladybug", 
         "../../packages/assets/ladybug.png", {
-            frameWidth: 290, frameHeight: 600
+            frameWidth: 300, frameHeight: 210
         });
 }
 
@@ -39,7 +46,10 @@ function create() {
     ground.displayWidth = config.width;
     ground.displayHeight = 100;
 
-    player = this.physics.add.sprite(0, 280, "ladybug");    
+    player = this.physics.add.sprite(300, 250, "ladybug");    
+    // Adjust the main character size will be useful for the main enemy
+    // player.displayHeight = 500;
+    // player.displayWidth = 200;
     //player.setBounce(0.5);
     player.setCollideWorldBounds(true);
     player.body.setGravityY(200);
@@ -47,16 +57,20 @@ function create() {
 
     this.physics.add.collider(player, ground);
 
+    bullets = this.physics.add.group({
+        allowGravity: false
+    });
+
     this.anims.create({
         key: 'left',
-        frames: this.anims.generateFrameNumbers('ladybug', { start: 0, end: 2 }),
+        frames: this.anims.generateFrameNumbers('ladybug', { start: 0, end: 1 }),
         frameRate: 10,
         repeat: -1
     });
 
     this.anims.create({
         key: 'turn',
-        frames: [{ key: 'ladybug', frame: 2 }],
+        frames: [{ key: 'ladybug', frame: 0 }],
         frameRate: 20
     });
 
@@ -69,15 +83,24 @@ function create() {
 
      this.anims.create({
         key: 'up',
-        frames: this.anims.generateFrameNumbers('ladybug', { start: 3, end: 4 }),
+        frames: this.anims.generateFrameNumbers('ladybug', { start: 3, end: 5 }),
         frameRate: 5,
         repeat: 2
     });
 
 
     cursors = this.input.keyboard.createCursorKeys();
+    spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 }
 
+// shoot function
+function shoot() {
+    const bullet = bullets.create(player.x + 130, player.y +20, "shoot");
+    bullet.setScale(0.25);
+    bullet.setVelocityX(450);
+}
+
+// movement
 function update() {
 
      if(cursors.left.isDown){
@@ -92,8 +115,18 @@ function update() {
     }
 
     if (cursors.up.isDown){
-        player.setVelocityY(-100);
+        player.setVelocityY(-400);
         player.anims.play('up', true);    
     }
+
+    if (Phaser.Input.Keyboard.JustDown(spaceKey)) {
+        shoot();
+    }
+
+    bullets.children.each((bullet) => {
+        if (bullet.x < -50 || bullet.x > config.width + 50) {
+            bullet.destroy();
+        }
+    });
 
 }

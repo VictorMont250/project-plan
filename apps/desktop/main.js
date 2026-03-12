@@ -4,6 +4,7 @@ import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// This funtion contains the window settings
 const createWindow = () => {
     const window = new BrowserWindow({
         width: 1200,
@@ -24,3 +25,4 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') 
         app.quit()
 })
+
