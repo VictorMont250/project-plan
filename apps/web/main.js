@@ -6,8 +6,8 @@ const config = {
     height: 650,
     physics: {
         default: "arcade",
-        arcade:{
-            gravity: { y: 300},
+        arcade: {
+            gravity: { y: 300 },
             debug: false
         }
     },
@@ -22,41 +22,69 @@ let player;
 let cursors;
 let ground;
 
-//shooting vars
+//shooting
 let spaceKey;
 let bullets;
+
+//enemys
+let ants;
+let ant2;
 
 const game = new Phaser.Game(config);
 
 
 function preload() {
-    
+    this.load.image('sky', "../../packages/assets/sky.png"
+    );
     this.load.image("ground", "../../packages/assets/grass.png");
     this.load.image("shoot", "../../packages/assets/shoot.png");
-    this.load.spritesheet("ladybug", 
+    this.load.spritesheet("ladybug",
         "../../packages/assets/ladybug.png", {
-            frameWidth: 300, frameHeight: 210
-        });
+        frameWidth: 300, frameHeight: 210
+    });
+
+    // ant spring
+    this.load.spritesheet("ant",
+        "../../packages/assets/ant.png", {
+        frameWidth: 300, frameHeight: 262
+    });
 }
 
 function create() {
+    this.add
+        .image(config.width / 2, config.height / 2, 'sky')
+        .setDisplaySize(config.width, config.height)
+        .setDepth(-1);
 
     // Stretch a static ground body across the full game width.
-    ground = this.physics.add.staticImage(600, 600, "ground").setScale(2).refreshBody();
+    ground = this.physics.add.staticImage(config.width / 2, config.height - 50, "ground");
     ground.displayWidth = config.width;
     ground.displayHeight = 100;
+    ground.refreshBody();
+    ground.body.setOffset(0, 0);
 
-    player = this.physics.add.sprite(300, 250, "ladybug");    
-    // Adjust the main character size will be useful for the main enemy
-    // player.displayHeight = 500;
-    // player.displayWidth = 200;
-    //player.setBounce(0.5);
+    player = this.physics.add.sprite(200, 0, "ladybug");
     player.setCollideWorldBounds(true);
     player.body.setGravityY(200);
-    
+    player.setScale(0.5);
 
-    this.physics.add.collider(player, ground);
 
+
+    // ant2 = this.physics.add.sprite(800, 0, "ant");    
+    // ant2.setCollideWorldBounds(true);
+    // ant2.body.setGravityY(200);
+    // enemies
+    ants = this.physics.add.group();
+    this.physics.add.collider(ants, ground);
+    this.time.addEvent({
+        delay: 10000,
+        callback: createAnts,
+        callbackScope: this,
+        loop: true
+    });
+
+
+    // shot creation
     bullets = this.physics.add.group({
         allowGravity: false
     });
@@ -81,11 +109,18 @@ function create() {
         repeat: -1
     });
 
-     this.anims.create({
+    this.anims.create({
         key: 'up',
         frames: this.anims.generateFrameNumbers('ladybug', { start: 3, end: 5 }),
         frameRate: 5,
         repeat: 2
+    });
+
+    this.anims.create({
+        key: 'ant-walk',
+        frames: this.anims.generateFrameNumbers('ant', { start: 1, end: 3 }),
+        frameRate: 8,
+        repeat: -1
     });
 
 
@@ -95,28 +130,39 @@ function create() {
 
 // shoot function
 function shoot() {
-    const bullet = bullets.create(player.x + 130, player.y +20, "shoot");
+    const bullet = bullets.create(player.x + 130, player.y + 20, "shoot");
     bullet.setScale(0.25);
     bullet.setVelocityX(450);
 }
 
+
+//create enemy
+function createAnts() {
+    const ant = ants.create(config.width + 120, 0, "ant");
+    ant.body.setGravityY(200);
+    ant.setVelocityX(-120);
+    ant.anims.play('ant-walk', true);
+    ant.setScale(0.25);
+}
+
+
 // movement
 function update() {
 
-     if(cursors.left.isDown){
-        player.setVelocityX(100 * -1);
+    if (cursors.left.isDown) {
+        player.setVelocityX(200 * -1);
         player.anims.play('left', true);
-    } else if (cursors.right.isDown){
-        player.setVelocityX(100);
+    } else if (cursors.right.isDown) {
+        player.setVelocityX(200);
         player.anims.play('right', true);
     } else {
         player.setVelocityX(0);
         player.anims.play('turn');
     }
 
-    if (cursors.up.isDown){
+    if (cursors.up.isDown) {
         player.setVelocityY(-400);
-        player.anims.play('up', true);    
+        player.anims.play('up', true);
     }
 
     if (Phaser.Input.Keyboard.JustDown(spaceKey)) {
@@ -126,6 +172,12 @@ function update() {
     bullets.children.each((bullet) => {
         if (bullet.x < -50 || bullet.x > config.width + 50) {
             bullet.destroy();
+        }
+    });
+
+    ants.children.each((ant) => {
+        if (ant.x < -120) {
+            ant.destroy();
         }
     });
 
