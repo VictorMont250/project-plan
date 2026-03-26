@@ -21,6 +21,9 @@ const config = {
 let player;
 let cursors;
 let ground;
+let antGround;
+
+const ANT_GROUND_COLLISION_OFFSET_Y = 90;
 
 //shooting
 let spaceKey;
@@ -40,7 +43,7 @@ function preload() {
     this.load.image("shoot", "../../packages/assets/shoot.png");
     this.load.spritesheet("ladybug",
         "../../packages/assets/ladybug.png", {
-        frameWidth: 300, frameHeight: 210
+        frameWidth: 320, frameHeight: 210
     });
 
     // ant spring
@@ -63,6 +66,18 @@ function create() {
     ground.refreshBody();
     ground.body.setOffset(0, 0);
 
+    // Separate collision plane for ants so their feet align with visual ground.
+    antGround = this.physics.add.staticImage(
+        ground.x,
+        ground.y + ANT_GROUND_COLLISION_OFFSET_Y,
+        "ground"
+    );
+    antGround.displayWidth = ground.displayWidth;
+    antGround.displayHeight = ground.displayHeight;
+    antGround.setVisible(false);
+    antGround.refreshBody();
+    antGround.body.setOffset(0, 0);
+
     player = this.physics.add.sprite(200, 0, "ladybug");
     player.setCollideWorldBounds(true);
     player.body.setGravityY(200);
@@ -75,9 +90,9 @@ function create() {
     // ant2.body.setGravityY(200);
     // enemies
     ants = this.physics.add.group();
-    this.physics.add.collider(ants, ground);
+    this.physics.add.collider(ants, antGround);
     this.time.addEvent({
-        delay: 10000,
+        delay: 5000,
         callback: createAnts,
         callbackScope: this,
         loop: true
@@ -111,15 +126,18 @@ function create() {
 
     this.anims.create({
         key: 'up',
-        frames: this.anims.generateFrameNumbers('ladybug', { start: 3, end: 5 }),
+        frames: this.anims.generateFrameNumbers('ladybug', { start: 3, end: 4 }),
         frameRate: 5,
         repeat: 2
     });
 
     this.anims.create({
         key: 'ant-walk',
-        frames: this.anims.generateFrameNumbers('ant', { start: 1, end: 3 }),
-        frameRate: 8,
+        // frames: this.anims.generateFrameNumbers('ant', { start: 0, end: 3 }),
+        // frameRate: 10,
+        // Keep only walk-cycle frames; later frames are non-walk poses.
+        frames: this.anims.generateFrameNumbers('ant', { frames: [0, 1, 2, 3, 4, 3, 2, 1] }),
+        frameRate: 5,
         repeat: -1
     });
 
@@ -138,11 +156,11 @@ function shoot() {
 
 //create enemy
 function createAnts() {
-    const ant = ants.create(config.width + 120, 0, "ant");
+    const ant = ants.create(config.width, 0, "ant");
     ant.body.setGravityY(200);
     ant.setVelocityX(-120);
     ant.anims.play('ant-walk', true);
-    ant.setScale(0.25);
+    ant.setScale(0.50);
 }
 
 
