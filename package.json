@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "desktop:start": "pnpm --dir apps/desktop start",
+    "mobile:start": "pnpm --dir apps/mobile start",
+    "web:start": "pnpm dlx http-server . -p 5500 -c-1 -o /apps/web",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
